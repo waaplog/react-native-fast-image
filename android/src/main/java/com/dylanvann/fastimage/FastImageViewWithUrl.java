@@ -15,8 +15,10 @@ class FastImageViewWithUrl extends AppCompatImageView {
         if (this.getDrawable() instanceof WebpDrawable) {
             WebpDrawable drawable = (WebpDrawable) this.getDrawable();
             if (!drawable.isRunning()) {
-                drawable.stop();
-                drawable.startFromFirstFrame();
+                try {
+                  drawable.stop();
+                  drawable.startFromFirstFrame();
+                } catch (IllegalArgumentException ignored) {}
             }
         }
     }
