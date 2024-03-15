@@ -1,6 +1,6 @@
 {
     "name": "react-native-fast-image",
-    "version": "8.5.11-picnic.15",
+    "version": "8.5.11-picnic.16",
     "description": "🚩 FastImage, performant React Native image component.",
     "keywords": [
         "cache",
