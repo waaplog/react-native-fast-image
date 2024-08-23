@@ -73,25 +73,20 @@
 - (void)setImageColor:(UIColor *)imageColor {
     if (imageColor != nil) {
         _imageColor = imageColor;
-        super.image = [self makeImage:super.image withTint:self.imageColor];
+        self.tintColor = imageColor;
+        super.image = [self.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    } else {
+        _imageColor = nil;
+        self.tintColor = nil;
+        super.image = [self.image imageWithRenderingMode:UIImageRenderingModeAutomatic];
     }
-}
-
-- (UIImage*)makeImage:(UIImage *)image withTint:(UIColor *)color {
-    UIImage *newImage = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    UIGraphicsBeginImageContextWithOptions(image.size, NO, newImage.scale);
-    [color set];
-    [newImage drawInRect:CGRectMake(0, 0, image.size.width, newImage.size.height)];
-    newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return newImage;
 }
 
 - (void)setImage:(UIImage *)image {
     if (self.imageColor != nil) {
-        super.image = [self makeImage:image withTint:self.imageColor];
+        super.image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     } else {
-        super.image = image;
+        super.image = [image imageWithRenderingMode:UIImageRenderingModeAutomatic];
     }
 }
 
@@ -99,7 +94,7 @@
     bool isAnimated = [image.class conformsToProtocol:@protocol(SDAnimatedImage)]
         ? [(SDAnimatedImage *)image animatedImageFrameCount] > 1
         : NO;
-    
+
     self.onLoadEvent = @{
                          @"width":[NSNumber numberWithDouble:image.size.width],
                          @"height":[NSNumber numberWithDouble:image.size.height],
@@ -150,13 +145,13 @@
             }
             self.hasCompleted = YES;
             [self sendOnLoad:image];
-            
+
             if (self.onFastImageLoadEnd) {
                 self.onFastImageLoadEnd(@{});
             }
             return;
         }
-        
+
         // Set headers.
         NSDictionary *headers = _source.headers;
         SDWebImageDownloaderRequestModifier *requestModifier = [SDWebImageDownloaderRequestModifier requestModifierWithBlock:^NSURLRequest * _Nullable(NSURLRequest * _Nonnull request) {
@@ -168,7 +163,7 @@
             return [mutableRequest copy];
         }];
         SDWebImageContext *context = @{SDWebImageContextDownloadRequestModifier : requestModifier};
-        
+
         // Set priority.
         SDWebImageOptions options = SDWebImageRetryFailed | SDWebImageHandleCookies;
         switch (_source.priority) {
@@ -182,7 +177,7 @@
                 options |= SDWebImageHighPriority;
                 break;
         }
-        
+
         switch (_source.cacheControl) {
             case FFFCacheControlWeb:
                 options |= SDWebImageRefreshCached;
@@ -193,7 +188,7 @@
             case FFFCacheControlImmutable:
                 break;
         }
-        
+
         if (self.onFastImageLoadStart) {
             self.onFastImageLoadStart(@{});
             self.hasSentOnLoadStart = YES;
@@ -202,14 +197,14 @@
         }
         self.hasCompleted = NO;
         self.hasErrored = NO;
-        
+
         [self downloadImage:_source options:options context:context];
     }
 }
 
 - (void)downloadImage:(FFFastImageSource *) source options:(SDWebImageOptions) options context:(SDWebImageContext *)context {
     __weak typeof(self) weakSelf = self; // Always use a weak reference to self in blocks
-    
+
     [self sd_setImageWithURL:_source.url
             placeholderImage:_placeholderImage
                      options:options
